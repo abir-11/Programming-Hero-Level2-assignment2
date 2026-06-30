@@ -6,7 +6,7 @@ const router = Router();
 
 router.post("/", auth("contributor", "maintainer"), issuesController.createIssue);
 
-
+router.get("/", issuesController.getAllIssue);
 
 
  

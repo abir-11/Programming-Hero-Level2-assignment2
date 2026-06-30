@@ -15,9 +15,70 @@ const createIssueIntoDB = async (payload: Iissues, reporter_id: number) => {
 };
 
 //get all issues
+const getAllIssuesFromDB = async (query: any) => {
+    const { sort = "newest", type, status } = query;
+    if (!sort) {
+        throw new Error("sort query parameter is required");
+    }
+    let sql = `
+    SELECT
+      issues.id,
+      issues.title,
+      issues.description,
+      issues.type,
+      issues.status,
+      issues.created_at,
+      issues.updated_at,
+      users.id AS reporter_id,
+      users.name,
+      users.role
+    FROM issues
+    JOIN users
+      ON issues.reporter_id = users.id
+  `;
 
+    const conditions: string[] = [];
+    const values: any[] = [];
+
+    if (type) {
+        values.push(type);
+        conditions.push(`issues.type = $${values.length}`);
+    }
+
+    if (status) {
+        values.push(status);
+        conditions.push(`issues.status = $${values.length}`);
+    }
+
+    if (conditions.length) {
+        sql += ` WHERE ` + conditions.join(" AND ");
+    }
+
+    sql +=
+        sort === "oldest"
+            ? ` ORDER BY issues.created_at ASC`
+            : ` ORDER BY issues.created_at DESC`;
+
+    const result = await pool.query(sql, values);
+
+    return result.rows.map((issue) => ({
+        id: issue.id,
+        title: issue.title,
+        description: issue.description,
+        type: issue.type,
+        status: issue.status,
+        reporter: {
+            id: issue.reporter_id,
+            name: issue.name,
+            role: issue.role,
+        },
+        created_at: issue.created_at,
+        updated_at: issue.updated_at,
+    }));
+};
 
 
 export const issuesService = {
-    createIssueIntoDB
+    createIssueIntoDB,
+    getAllIssuesFromDB
 }
