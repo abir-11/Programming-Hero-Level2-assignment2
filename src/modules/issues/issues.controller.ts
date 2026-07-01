@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import { issuesService } from "./issues.service";
 
-const createIssue = async(req: Request, res: Response) => {
-    try{
+const createIssue = async (req: Request, res: Response) => {
+    try {
         const reporter_id = req.user!.id;
 
         const result = await issuesService.createIssueIntoDB(
@@ -16,7 +16,7 @@ const createIssue = async(req: Request, res: Response) => {
             data: result
         });
     }
-    catch(err: any) {
+    catch (err: any) {
         res.status(500).json({
             success: false,
             message: err.message,
@@ -25,11 +25,11 @@ const createIssue = async(req: Request, res: Response) => {
     }
 };
 //get all
-const getAllIssue = async(  req: Request, res: Response) => {
-    try{
-         const result = await issuesService.getAllIssuesFromDB(req.query);
+const getAllIssue = async (req: Request, res: Response) => {
+    try {
+        const result = await issuesService.getAllIssuesFromDB(req.query);
 
-         const { sort } = req.query;
+        const { sort } = req.query;
 
         if (!sort) {
             return res.status(400).json({
@@ -43,7 +43,7 @@ const getAllIssue = async(  req: Request, res: Response) => {
             data: result,
         });
     }
-    catch(err: any) {
+    catch (err: any) {
         res.status(500).json({
             success: false,
             message: err.message,
@@ -52,8 +52,29 @@ const getAllIssue = async(  req: Request, res: Response) => {
     }
 }
 
+const getSingleIssue = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
 
-export const issuesController={
+        const result = await issuesService.getSingleIssueFromDB(Number(id));
+
+        res.status(200).json({
+            success: true,
+            message:"Issue retrived successfully",
+            data: result,
+        });
+    }
+    catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+            error: err,
+        });
+    }
+};
+
+export const issuesController = {
     createIssue,
-    getAllIssue
+    getAllIssue,
+    getSingleIssue
 }
