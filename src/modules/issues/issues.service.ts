@@ -114,8 +114,8 @@ const getSingleIssueFromDB = async (id: number) => {
     }
 }
 
-const updateIssueIntoDB = async(issueId: number, payload: Iissues, user: any) => {
-    
+const updateIssueIntoDB = async (issueId: number, payload: Iissues, user: any) => {
+
     const issueResult = await pool.query(
         `
         SELECT * FROM issues
@@ -124,23 +124,23 @@ const updateIssueIntoDB = async(issueId: number, payload: Iissues, user: any) =>
         [issueId]
     );
 
-    if(issueResult.rows.length === 0) {
+    if (issueResult.rows.length === 0) {
         throw new Error("Issue not found");
     }
 
     const issue = issueResult.rows[0];
 
     // 2. Logic of authorization
-    if(user.role === "contributor") {
+    if (user.role === "contributor") {
 
         // own issue check
-        if(issue.reporter_id !== user.id) {
+        if (issue.reporter_id !== user.id) {
             throw new Error(
                 "You can update only your own issue"
             );
         }
 
-        if(issue.status !== "open") {
+        if (issue.status !== "open") {
             throw new Error(
                 "You cannot update this issue"
             );
@@ -178,11 +178,36 @@ const updateIssueIntoDB = async(issueId: number, payload: Iissues, user: any) =>
     return result.rows[0];
 };
 
+const deleteIssueFromDB = async (issueId: number) => {
+    const issueResult = await pool.query(
+        `
+            SELECT * FROM issues
+            WHERE id=$1
+        `,
+        [issueId]
+    );
+
+    if (issueResult.rows.length === 0) {
+        throw new Error("Issue not found");
+    }
+
+    const result = await pool.query(
+        `
+        DELETE FROM issues
+        WHERE id=$1
+        `,
+        [issueId]
+    );
+
+    return result
+}
+
 
 
 export const issuesService = {
     createIssueIntoDB,
     getAllIssuesFromDB,
     getSingleIssueFromDB,
-    updateIssueIntoDB
+    updateIssueIntoDB,
+    deleteIssueFromDB
 }

@@ -5,9 +5,9 @@ import auth from "../../middleware/auth.js";
 const router = Router();
 
 router.post("/", auth("contributor", "maintainer"), issuesController.createIssue);
-
 router.get("/", issuesController.getAllIssue);
 router.get("/:id", issuesController.getSingleIssue);
 router.patch("/:id", auth("contributor", "maintainer"), issuesController.updateIssue);
- 
+router.delete("/:id", auth("maintainer"), issuesController.deleteIssue)
+
 export const issuesRouter = router;

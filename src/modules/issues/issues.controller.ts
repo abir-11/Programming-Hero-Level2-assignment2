@@ -60,7 +60,7 @@ const getSingleIssue = async (req: Request, res: Response) => {
 
         res.status(200).json({
             success: true,
-            message:"Issue retrived successfully",
+            message: "Issue retrived successfully",
             data: result,
         });
     }
@@ -72,8 +72,8 @@ const getSingleIssue = async (req: Request, res: Response) => {
         });
     }
 };
-const updateIssue = async(req: Request, res: Response) => {
-    try{
+const updateIssue = async (req: Request, res: Response) => {
+    try {
         const issueId = Number(req.params.id);
 
         const user = req.user!;
@@ -90,7 +90,7 @@ const updateIssue = async(req: Request, res: Response) => {
             data: result,
         });
     }
-    catch(err: any) {
+    catch (err: any) {
         res.status(500).json({
             success: false,
             message: err.message,
@@ -99,10 +99,31 @@ const updateIssue = async(req: Request, res: Response) => {
     }
 };
 
+const deleteIssue = async (req: Request, res: Response) => {
+    try {
+        const issueId = Number(req.params.id);
+
+        const result = await issuesService.deleteIssueFromDB(issueId);
+
+        res.status(200).json({
+            success: true,
+            message: "Issue deleted successfully"
+        });
+    }
+    catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+            error: err,
+        });
+    }
+}
+
 
 export const issuesController = {
     createIssue,
     getAllIssue,
     getSingleIssue,
-    updateIssue
+    updateIssue,
+    deleteIssue
 }
