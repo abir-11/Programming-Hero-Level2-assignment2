@@ -114,10 +114,75 @@ const getSingleIssueFromDB = async (id: number) => {
     }
 }
 
+const updateIssueIntoDB = async(issueId: number, payload: Iissues, user: any) => {
+    
+    const issueResult = await pool.query(
+        `
+        SELECT * FROM issues
+        WHERE id=$1
+        `,
+        [issueId]
+    );
+
+    if(issueResult.rows.length === 0) {
+        throw new Error("Issue not found");
+    }
+
+    const issue = issueResult.rows[0];
+
+    // 2. Logic of authorization
+    if(user.role === "contributor") {
+
+        // own issue check
+        if(issue.reporter_id !== user.id) {
+            throw new Error(
+                "You can update only your own issue"
+            );
+        }
+
+        if(issue.status !== "open") {
+            throw new Error(
+                "You cannot update this issue"
+            );
+        }
+
+    }
+
+
+    // 3. Payload destructuring
+    const { title, description, type, status } = payload;
+
+    const result = await pool.query(
+        `
+        UPDATE issues 
+        SET 
+        title=$1,
+        description=$2,
+        type=$3,
+        status=$4,
+        updated_at=NOW()
+
+        WHERE id=$5
+
+        RETURNING *
+        `,
+        [
+            title || issue.title,
+            description || issue.description,
+            type || issue.type,
+            status || issue.status,
+            issueId
+        ]
+    );
+
+    return result.rows[0];
+};
+
+
 
 export const issuesService = {
     createIssueIntoDB,
     getAllIssuesFromDB,
     getSingleIssueFromDB,
-    
+    updateIssueIntoDB
 }
